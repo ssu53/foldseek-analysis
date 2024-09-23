@@ -7,6 +7,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from tqdm import tqdm
+
 class Decoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, z_dim):
         super(Decoder, self).__init__()
@@ -102,7 +104,7 @@ def train_vqvae(model, training_data, n_epochs, lr, batch_size):
     loss_fn = nn.GaussianNLLLoss()
     model.train()
 
-    for i in range(n_epochs):
+    for i in tqdm(range(n_epochs)):
         for k, (feat_x, feat_y) in enumerate(batched(training_data, batch_size)):
             feat_x  = torch.tensor(feat_x, dtype=torch.float32)
             feat_y = torch.tensor(feat_y, dtype=torch.float32)

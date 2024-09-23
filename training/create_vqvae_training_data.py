@@ -10,6 +10,7 @@ import sys
 
 import extract_pdb_features
 import util
+from tqdm import tqdm
 
 data_dir = os.path.join(os.path.dirname(__file__), 'data/')
 
@@ -81,8 +82,10 @@ if __name__ == '__main__':
     # Not needed execept to exactly reproduce result
     random.Random(123).shuffle(alignments)
 
+    print(f"{len(alignments)=}")
+
     xy = []  # (n x 10, n x 10)
-    for sid1, sid2, cigar_string in alignments:
+    for sid1, sid2, cigar_string in tqdm(alignments):
         xy.append(align_features(pdb_dir, virtual_center, sid1, sid2, cigar_string))
 
     # Write features to disc
@@ -90,6 +93,8 @@ if __name__ == '__main__':
     y_feat = np.vstack([y for x, y in xy])
     idx = np.arange(len(x_feat))
     np.random.RandomState(123).shuffle(idx)
+
+    print(f"{x_feat.shape=} {y_feat.shape=}")
 
     np.save(out, np.dstack([x_feat[idx], y_feat[idx]]))
 
