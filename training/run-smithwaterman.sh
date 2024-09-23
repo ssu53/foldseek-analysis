@@ -33,7 +33,7 @@ task(){
     tmp/ssw_test -o "$GAPOPEN" -e "$GAPEXTEND" -a tmp/s.mat -p \
         -f 50 tmp/target.fasta "$1" \
         2> /dev/null \
-    | mawk '/^target/{target=$2}
+    | awk '/^target/{target=$2}
             /^query/{query=$2}
             /^optimal_alignment_score/{score=$2; print query,target,score}' \
     | sort -k1,1 -k3,3nr \
