@@ -1,4 +1,4 @@
-#!/usr/bin/mawk -f 
+#!/usr/bin/awk -f 
 BEGIN{OFS="\t";
       removeSelfHit = 1;
       tp_fam = 0; tp_sfam = 0; tp_fold = 0; fp = 0;	
