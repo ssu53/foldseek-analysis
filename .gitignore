@@ -1,7 +1,21 @@
+# Pycache
 training/__pycache__/
+
+# Training artefacts
 training/tmp*
 training/alphabet*
-tmp/
+
+# Scratch scripts
 scratch/
+
+# Slurm artefacts
 slurm_outputs/
 slurm_errors/
+
+# Executables
+metrics/TMalign
+metrics/TMalign_cpp
+
+# Script outputs
+metrics/*.out
+metrics/rot_mat/
