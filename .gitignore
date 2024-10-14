@@ -1,2 +1,7 @@
 training/__pycache__/
-training/tmp
+training/tmp*
+training/alphabet*
+tmp/
+scratch/
+slurm_outputs/
+slurm_errors/
