@@ -117,7 +117,15 @@ def train_vqvae(model, training_data, n_epochs, lr, batch_size):
             loss = recon_loss + vq_loss
             loss.backward()
             optimizer.step()
-
+            if k % 1000 == 0: 
+                print(f"{k} recon {recon_loss.item():.3f} vq {vq_loss.item():.3f} total {loss.item():.3f}")
+                # my_recon_loss = (0.5 * (torch.log(var) + (feat_y - mu)**2 / var)).mean()
+                # print(f"{recon_loss.item():.3f} {my_recon_loss.item():.3f} {0.5 * torch.log(var).mean():.3f} {(0.5 * (feat_y - mu)**2 / var).mean():.3f}")
+                # print(f"{feat_x.mean(dim=0)=}")
+                # print(f"{feat_y.mean(dim=0)=}")
+                # print(f"{mu.mean(dim=0)=}")
+                # print(f"{var.mean(dim=0)=}")
+        print(f'Epoch {i} loss= {loss.item():.3}')
     print(f'opt_loss= {loss.item():.3}')
 
 
@@ -139,7 +147,7 @@ if __name__ == '__main__':
     Z_DIM = 2
     BATCH_SIZE = 512
     LR = 1e-3
-    N_EPOCHS = 4
+    N_EPOCHS = 1
 
     model =  create_vqvae(seed, input_dim, hidden_dim, Z_DIM, n_states)
     train_vqvae(model, training_data, N_EPOCHS, LR, BATCH_SIZE)
@@ -154,6 +162,7 @@ if __name__ == '__main__':
 
     # Export encoder, decoder and states
     path, name = out_dir, ''
+    print(f"Saving to {path}")
     torch.save(encoder_fused, f'{path}/encoder{name}.pt')
     torch.save(model.decoder, f'{path}/decoder{name}.pt')
     np.savetxt(f'{path}/states{name}.txt', model.vq.embedding.weight.detach().numpy())
