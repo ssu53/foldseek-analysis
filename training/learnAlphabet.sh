@@ -1,5 +1,7 @@
 #!/bin/bash -x
 
+date # timestamp
+
 if [ "$#" -ne 5 ]; then
     echo "Illegal number of parameters"
     exit
@@ -15,16 +17,19 @@ OUTPUT_DIR=$5 # save alphabet here
 mkdir -p tmp
 mkdir -p $OUTPUT_DIR
 
+PDB_DIR='/oak/stanford/groups/jamesz/shiye/scope40/'
+MODE='foldseek'
+
 # Fetch PDBs
-if [ ! -d tmp/pdb ]; then
-    curl https://wwwuser.gwdguser.de/~compbiol/foldseek/scop40pdb.tar.gz | tar -xz -C tmp
+if [ ! -d $PDB_DIR ]; then
+    curl https://wwwuser.gwdguser.de/~compbiol/foldseek/scop40pdb.tar.gz | tar -xz -C $PDB_DIR
 fi
 
 # Compile ssw_test
-if [ ! -f tmp/ssw_test ]; then
-    git clone --depth 1 https://github.com/mengyao/Complete-Striped-Smith-Waterman-Library tmp/ssw
-    (cd tmp/ssw/src && make)
-    cp tmp/ssw/src/ssw_test tmp/ssw_test
+if [ ! -f ssw/ssw_test ]; then
+    git clone --depth 1 https://github.com/mengyao/Complete-Striped-Smith-Waterman-Library ssw/ssw
+    (cd ssw/ssw/src && make)
+    cp ssw/ssw/src/ssw_test tmp/ssw_test
 fi
 
 # Filter alignments for training
@@ -48,26 +53,35 @@ D=2
 
 # Create training data
 ./create_vqvae_training_data.py \
-    tmp/pdb tmp/pairfile_train.out $THETA $TAU $D tmp/vaevq_training_data.npy
+    $PDB_DIR tmp/pairfile_train.out $THETA $TAU $D tmp/vaevq_training_data.npy $MODE
+
+echo "Trying seeds."
 
 for ((seed=0;seed<$TRIES;seed++))
 do
+    date # timestamp
+
     echo -n "$seed " >> "$OUTPUT_DIR/log.txt"
 
     ./train_vqvae.py $seed tmp/vaevq_training_data.npy tmp $K \
-    | awk '/opt_loss=/{printf "%s ", $2}' >> "$OUTPUT_DIR/log.txt"
+    | tee tmp/training_log.out | awk '/opt_loss=/{printf "%s ", $2}' >> "$OUTPUT_DIR/log.txt"
     
     $RUN \
       ./encode_pdbs.py tmp/encoder.pt tmp/states.txt \
-      --pdb_dir tmp/pdb --virt $THETA $TAU $D \
+      --pdb_dir $PDB_DIR --virt $THETA $TAU $D \
+      --encoder_feat_type $MODE \
       < $PDBS_TRAIN > tmp/seqs.csv
     
     ./create_submat.py tmp/pairfile_train.out tmp/seqs.csv --mat tmp/sub_score.mat
     
     ./run-benchmark.sh tmp/encoder.pt tmp/states.txt tmp/sub_score.mat \
-      $PDBS_VAL data/scop_lookup.tsv $THETA $TAU $D X >> "$OUTPUT_DIR/log.txt"
+      $PDBS_VAL data/scop_lookup.tsv $THETA $TAU $D X $MODE >> "$OUTPUT_DIR/log.txt"
 
 done
+
+# exit
+
+echo "Reproducing for best seed."
 
 # Find best seed
 # TMalign.rocx => 0.928162 0.662063 0.275436
@@ -84,7 +98,7 @@ awk 'FNR==NR {pdbs[$1]=1; next}
          tmp/pdbs_submat.txt data/tmaln-06.out > tmp/pairfile_submat.out
 
 $RUN ./encode_pdbs.py $OUTPUT_DIR/encoder.pt $OUTPUT_DIR/states.txt \
-  --pdb_dir tmp/pdb --virt $THETA $TAU $D \
+  --pdb_dir $PDB_DIR --virt $THETA $TAU $D \
     < tmp/pdbs_submat.txt > tmp/seqs.csv
 
 ./create_submat.py tmp/pairfile_submat.out tmp/seqs.csv \
@@ -104,3 +118,5 @@ END{print "X   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
 #     FNR!=NR {gsub(/X/,newxstate,$2);print $1,$2}' \
 #         tmp/create_submat.log tmp/seqs.csv > tmp/seqs_no_x.csv
 
+echo "Finished."
+date # timetamp

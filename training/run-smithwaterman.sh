@@ -30,7 +30,7 @@ run_with_lock(){
 }
 
 task(){
-    tmp/ssw_test -o "$GAPOPEN" -e "$GAPEXTEND" -a tmp/s.mat -p \
+    ssw/ssw_test -o "$GAPOPEN" -e "$GAPEXTEND" -a tmp/s.mat -p \
         -f 50 tmp/target.fasta "$1" \
         2> /dev/null \
     | awk '/^target/{target=$2}

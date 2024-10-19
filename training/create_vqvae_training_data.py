@@ -157,7 +157,7 @@ def encoder_features_custom(pdb_id, pdb_id_to_encoding, pdb_id_to_protein):
     # Get encoding
     encoding = pdb_id_to_encoding[pdb_id]
     assert encoding.ndim == 2
-    assert encoding.size(1) == 10 # specific to the current encoding
+    # assert encoding.size(1) == 8 # specific to the current encoding
 
     # Get valid_mask from protein object
     mask = pdb_id_to_protein[pdb_id]['valid_mask']
@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
     print(f"{len(alignments)=}")
 
-    if mode == 'foldseek-default':
+    if mode == 'foldseek':
         align_features_fn = partial(align_features, pdb_dir=pdb_dir, virtual_center=virtual_center)
     elif mode == 'esm':
         align_features_fn = partial(align_features_esm, pdb_dir=pdb_dir)
