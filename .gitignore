@@ -4,6 +4,8 @@ training/__pycache__/
 # Training artefacts
 training/tmp*
 training/alphabet*
+training/data_dev*
+training/ssw
 
 # Scratch scripts
 scratch/
