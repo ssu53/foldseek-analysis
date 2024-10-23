@@ -41,8 +41,8 @@ split -n 30 -d tmp/target.fasta tmp/splits/split_ --additional-suffix=.fasta
 ./run-smithwaterman.sh 8 2  # sub_score.mat, target.fasta
 
 # buffering issue (?) wait for all the files produced from the above script to appear
-# sleep 90 
-wait
+sleep 30 
+# wait
 
 ./roc1.awk tmp/scop_lookup_filtered.tsv \
     <(cat tmp/alignments/*.m8) > tmp/result.rocx

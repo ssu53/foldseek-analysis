@@ -17,7 +17,7 @@ OUTPUT_DIR=$5 # save alphabet here
 mkdir -p tmp
 mkdir -p $OUTPUT_DIR
 
-PDB_DIR='/oak/stanford/groups/jamesz/shiye/scope40/'
+PDB_DIR='/scratch/groups/jamesz/shiye/scope40/'
 MODE='foldseek'
 
 # Fetch PDBs
@@ -79,7 +79,7 @@ do
 
 done
 
-# exit
+exit
 
 echo "Reproducing for best seed."
 

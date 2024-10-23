@@ -207,7 +207,7 @@ if __name__ == '__main__':
     b = int(sys.argv[4])
     c = float(sys.argv[5])
     out = sys.argv[6]
-    mode = sys.argv[7]
+    encoder_feat_type = sys.argv[7]
     virtual_center = (a, b, c)
 
     with open(data_dir + 'pdbs_train.txt') as file:
@@ -228,12 +228,12 @@ if __name__ == '__main__':
 
     print(f"{len(alignments)=}")
 
-    if mode == 'foldseek':
+    if encoder_feat_type == 'foldseek':
         align_features_fn = partial(align_features, pdb_dir=pdb_dir, virtual_center=virtual_center)
-    elif mode == 'esm':
+    elif encoder_feat_type == 'esm':
         align_features_fn = partial(align_features_esm, pdb_dir=pdb_dir)
-    elif mode == 'custom':
-        pdb_id_to_encoding = torch.load('data_dev/encodings.pt')
+    else: # encoder_feat_type is a path to pdb_id_encodings
+        pdb_id_to_encoding = torch.load(encoder_feat_type)
         pdb_id_to_protein = torch.load('data_dev/proteins.pt')
         align_features_fn = partial(
             align_features_custom,
@@ -241,8 +241,6 @@ if __name__ == '__main__':
             pdb_id_to_encoding=pdb_id_to_encoding,
             pdb_id_to_protein=pdb_id_to_protein,
         )
-    else:
-        raise NotImplementedError
     
     xy = []  # (n x 10, n x 10)
     for sid1, sid2, cigar_string in tqdm(alignments):
