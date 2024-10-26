@@ -1,5 +1,6 @@
 # %% 
 
+import sys
 import re
 from tqdm import tqdm
 from pathlib import Path
@@ -128,6 +129,7 @@ def populate_metrics_for_row(
     i: Union[str, int], 
     pdb_dir: Path,
     pdb_extension: str='',
+    rot_mats_dir: str = 'rot_mats',
     compute_chamfer: bool = True,
     compute_emd: bool = True,
     compute_lddt: bool = True,
@@ -150,7 +152,7 @@ def populate_metrics_for_row(
     aligned = cigar_to_tuples(cigar, query_start=0, target_start=0)
     
     # Get superposition coording to TMalign computed transformation
-    translation, rotation = read_tmalign_transformation(dir='rot_mats', fn=f"{id1}-{id2}.txt")
+    translation, rotation = read_tmalign_transformation(dir=rot_mats_dir, fn=f"{id1}-{id2}.txt")
     coords1_tf = translation + (rotation @ coords1.T).T
 
     # LDDT
@@ -184,17 +186,20 @@ def populate_metrics_for_row(
 
 
 
-def main():
+def main(
+    load_path = 'tmalign.csv',
+    pdb_dir = '/scratch/groups/jamesz/shiye/scope40',
+    rot_mats_dir = 'rot_mats',
+):
 
-    pdb_dir = '/oak/stanford/groups/jamesz/shiye/scope40'
-
-    df = read_tmalign_csv('tmalign.csv')
+    df = read_tmalign_csv(load_path)
 
     for i in tqdm(df.index):
         populate_metrics_for_row(
             df,
             i,
             pdb_dir=pdb_dir,
+            rot_mats_dir=rot_mats_dir,
             # compute_emd=False, # EMD computation is super slow.
         )
 
@@ -202,8 +207,12 @@ def main():
 
 
 if __name__ == '__main__':
+    load_path = sys.argv[1] # tabulated outputs of TMalign with cigar strings
+    pdb_dir = sys.argv[2]   # directory of PDBs
+    rot_mats_dir = sys.argv[3]  # directory of TMalign rotation matrices
+    save_path = sys.argv[4] # tabulated outputs with extra metrics
 
-    df = main()
+    df = main(load_path, pdb_dir, rot_mats_dir)
     print(df[['rmsd','lddt','chamfer','emd']].mean())
     df = df[[ # reorder
         'prot_1',
@@ -219,5 +228,5 @@ if __name__ == '__main__':
         'emd',
         'cigar',
     ]]
-    df.to_csv('tmalign_extra.csv', index=False, sep='\t')
+    df.to_csv(save_path, index=False, sep='\t')
 

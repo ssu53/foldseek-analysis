@@ -19,6 +19,6 @@ metrics/TMalign
 metrics/TMalign_cpp
 
 # Script outputs
-metrics/*.out
+metrics/outputs_*
 metrics/*.csv
-metrics/rot_mats/
+metrics/*.out

@@ -20,17 +20,45 @@ We also downloaded the `TMalign_cpp` executable directly from ([link](https://se
 
 # Running TMalign and computing extra metrics
 
-## Run TMalign on a protein pairs. 
 
-By default the pair files is `training/data/tmaln-06_500.out`.
+TMalign metrics and other metrics are computed for a list of protein pairs. 
+The pairs are sampled uniformly from the files contained in `ALIGNMENT_DIR`, which is the `alignments/` output directory produced by running `learnAlphabet.sh`.
 
-Output of TMalign is saved to local file `tmalign.out`.
-
-Transformations (rotation matrix and translation vector to superpose first structure onto second structure) are saved to local dir `rot_mats` by default.
 
 ```
-./run_tmalign.sh
+./run_tmalign.sh ALIGNMENT_DIR
 ```
+
+This script creates a datestamped directory within `metrics/` to hold outputs.
+
+The slowest step by far is computing the EMD. 
+
+High level overview of the step sbelow.
+
+
+## Sample list of pairs from alignments
+
+There are likely too many alignments to compute metrics for all of them. Sample uniformly over those files:
+
+```
+python get_sampled_pairfile.py
+```
+
+This can be skipped if already have a pair file, e.g. `training/data/tmaln-06.out`.
+
+## Run TMalign on protein pairs
+
+Run TMalign for pairs in a pairfile.
+
+```
+TMalign_cpp protein1.pdb protein2.pdb -m rot_mats/protein1-protein2.txt
+```
+
+Raw outputs of TMalign is dumped to `tmalign.out`.
+
+Transformations (rotation matrix and translation vector to superpose first structure onto second structure) are saved to `rot_mats/`.
+
+
 
 ## Parse the TMalign output file into tsv
 
@@ -41,7 +69,7 @@ python parse_tmalign_output.py
 ```
 
 
-## Enrich the TMalign tabulted results with other metrics
+## Enrich the TMalign tabulated results with other metrics
 
 Reads 'tmalign.csv' and enriches it with
 - LDDT (Approximate implementation from Foldseek. Computed between aligned residues only)

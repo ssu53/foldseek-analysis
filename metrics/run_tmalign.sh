@@ -1,32 +1,97 @@
-#!/bin/bash
+#!/bin/bash -x
+
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
+
 
 # Set input arguments and defaults
-PDB_DIR="${1:-$'/oak/stanford/groups/jamesz/shiye/scope40/'}"
-PAIR_FILE="${2:-$'/home/groups/jamesz/shiye/foldseek-analysis/training/data/tmaln-06_500.out'}"
-ROT_DIR="${3:-$'rot_mats/'}"
-OUT_FILE="${4:-$'tmalign.out'}"
 
+ALIGNMENTS_DIR="${1:-$'../training/tmp19_v4_encodings/alignments'}"
+NUM_SAMPLES="${2:-1000}"
+
+
+# Set paths
+
+PDB_DIR='/scratch/groups/jamesz/shiye/scope40/'
+MASTER_FILE='MASTER_RESULTS.csv'
+ROT_DIR='rot_mats/'
+RAW_OUT_FILE='tmalign.out'
+PARSED_OUT_FILE='tmalign.csv'
+AUGMENTED_OUT_FILE='tmalign_extra.csv'
+PAIR_FILE='pairfile.out'
+
+
+# Put output artefacts in directory named by the datetime
+
+DIR="outputs_$(date '+%Y-%m-%d-%H-%M-%S')"
+ROT_DIR="${DIR}/${ROT_DIR}"
+RAW_OUT_FILE="${DIR}/${RAW_OUT_FILE}"
+PARSED_OUT_FILE="${DIR}/${PARSED_OUT_FILE}"
+AUGMENTED_OUT_FILE="${DIR}/${AUGMENTED_OUT_FILE}"
+PAIR_FILE="${DIR}/${PAIR_FILE}"
+
+mkdir $DIR
+mkdir $ROT_DIR
+
+
+# Get the pairfile
+
+# Testing -- run with existing tmaln-06_500.out instead of computing pair file
+# PAIR_FILE="${1:-$'/home/groups/jamesz/shiye/foldseek-analysis/training/data/tmaln-06_500.out'}"
+
+python get_sampled_pairfile.py $ALIGNMENTS_DIR $NUM_SAMPLES $MASTER_FILE $PAIR_FILE
+
+
+
+# Log stuff to output file
+
+echo "### Running TM-align (Version 20220412), compiled locally from cpp." > $RAW_OUT_FILE
+
+echo "### PDB_DIR" $PDB_DIR >> $RAW_OUT_FILE
+echo "### MASTER_FILE" $MASTER_FILE >> $RAW_OUT_FILE
+echo "### ALIGNMENTS_DIR" $ALIGNMENTS_DIR >> $RAW_OUT_FILE
+echo "### PAIR_FILE" $PAIR_FILE >> $RAW_OUT_FILE
+echo "### ROT_DIR" $ROT_DIR >> $RAW_OUT_FILE
+echo "### RAW_OUT_FILE" $RAW_OUT_FILE >> $RAW_OUT_FILE
+echo "### PARSED_OUT_FILE" $PARSED_OUT_FILE >> $RAW_OUT_FILE
+echo "### AUGMENTED_OUT_FILE" $AUGMENTED_OUT_FILE >> $RAW_OUT_FILE
+echo "### PAIR_FILE" $PAIR_FILE >> $RAW_OUT_FILE
 
 echo "Running..." $(date)
 
-echo "Running TM-align (Version 20220412), compiled locally from cpp." > $OUT_FILE
 
-echo "PDB_DIR" $PDB_DIR >> $OUT_FILE
-echo "PAIR_FILE" $PAIR_FILE >> $OUT_FILE
-echo "ROT_DIR" $ROT_DIR >> $OUT_FILE
-echo "OUT_FILE" $OUT_FILE >> $OUT_FILE
-
-
-# awk -v PDB_DIR="${PDB_DIR}" -v ROT_DIR="${ROT_DIR}" '{ system("echo " PDB_DIR $1 " " PDB_DIR $2 " -m " ROT_DIR $1 "-" $2 ".txt") }' $PAIR_FILE
 
 # Run TM-Align
+
 # Produce full outputs without version or citation information
 # Save rotation matrices to ROT_DIR
 # Save outputs to file
+
+# awk -v PDB_DIR="${PDB_DIR}" -v ROT_DIR="${ROT_DIR}" '{ system("echo " PDB_DIR $1 " " PDB_DIR $2 " -m " ROT_DIR $1 "-" $2 ".txt") }' $PAIR_FILE
+
 awk -v PDB_DIR="${PDB_DIR}" \
     -v ROT_DIR="${ROT_DIR}" \
     '{ system("./TMalign_cpp " PDB_DIR $1 " " PDB_DIR $2 " -outfmt -1 -m " ROT_DIR $1 "-" $2 ".txt") }' \
-    $PAIR_FILE >> $OUT_FILE
+    $PAIR_FILE >> $RAW_OUT_FILE
+
+echo "Finished running TMalign: " $(date)
 
 
-echo "Completed: " $(date)
+
+# Parse the TMalign outputs
+
+python parse_tmalign_output.py $RAW_OUT_FILE $PARSED_OUT_FILE
+echo "Parsed TMalign outputs: " $(date)
+
+
+
+# Compute the LDDT, Chamfer, EMD metrics
+
+python compute_extra_metrics.py $PARSED_OUT_FILE $PDB_DIR $ROT_DIR $AUGMENTED_OUT_FILE
+echo "Computed extra metrics: " $(date)
+
+
+# Update master results file by concatenating new results
+
+awk FNR!=1 $AUGMENTED_OUT_FILE >> $MASTER_FILE
+echo "Updated master results file: " $(date)

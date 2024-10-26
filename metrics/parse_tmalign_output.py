@@ -1,5 +1,6 @@
 # %%
 
+import sys
 import pandas as pd
 
 
@@ -8,11 +9,11 @@ def parse_tmalign_output(line, row, rows, pdb_dir):
     if line.strip() == '':
         return line, row, rows, pdb_dir
 
-    elif line.startswith('PDB_DIR'):
+    elif line.startswith('### PDB_DIR'):
         _, _, pdb_dir = line.partition('PDB_DIR')
         pdb_dir = pdb_dir.strip()
 
-    elif line.startswith(('Running TM-align', 'PAIR_FILE', 'ROT_DIR', 'OUT_FILE', '(You should use TM-score')):
+    elif line.startswith(('###', '(You should use TM-score')):
         return line, row, rows, pdb_dir
     
     elif line.startswith("Name of Chain_1:"):
@@ -75,6 +76,7 @@ def get_parsed_df(load_path: str = 'tmalign.out') -> pd.DataFrame:
     with open(load_path, 'r') as f:
         for line in f:
             line, row, rows, pdb_dir = parse_tmalign_output(line, row, rows, pdb_dir)
+    print(f"{len(rows)=}")
 
     df = pd.DataFrame.from_dict(rows, orient='columns')
     df.columns = [
@@ -155,11 +157,12 @@ def populate_cigar_strings(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def main():
-
+def save_parsed_df_with_cigars(
+    load_path: str = 'tmalign.out',
     save_path: str = 'tmalign.csv'
+):
 
-    df = get_parsed_df()
+    df = get_parsed_df(load_path)
     df = populate_cigar_strings(df)
 
     if save_path is not None:
@@ -168,6 +171,9 @@ def main():
 
 
 def verify_against_file():
+    """
+    for pairs in tmaln-06-500.out, which contains TMalign outputs shipped with the repo
+    """
 
     import numpy as np
     
@@ -202,8 +208,10 @@ def verify_against_file():
 
 
 if __name__ == '__main__':
-    main()
-    verify_against_file()
+    load_path = sys.argv[1] # raw outputs of TMalign
+    save_path = sys.argv[2] # tabulated outputs with cigar strings
+    save_parsed_df_with_cigars(load_path, save_path)
+    # verify_against_file()
 
     
 
