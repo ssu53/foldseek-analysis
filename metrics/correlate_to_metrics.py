@@ -11,7 +11,7 @@ alignments_path = '../training/tmp0_foldseek_filtered/alignments'
 # alignments_path = '../training/tmp19_v4_encodings/alignments'
 # alignments_path = '../training/tmp21_v6_encodings/alignments'
 
-metrics_path = 'MASTER_RESULTS.csv'
+metrics_path = 'MASTER_RESULTS_v0.csv'
 
 metrics = pd.read_csv(metrics_path, sep='\t')
 sid_pair_to_metrics_ind = {f"{row.prot_1}-{row.prot_2}": ind for ind,row in metrics.iterrows()}
@@ -47,7 +47,7 @@ for alignment_fn in alignment_fns:
 
 
 
-def plot_and_correlate(metrics, xvar, yvar, top_only=False, clean_outliers=False, verbose=False):
+def plot_and_correlate(metrics, xvar, yvar, corr_method='spearman', top_only=False, clean_outliers=False, verbose=False):
 
     if top_only:
         if xvar in {'tms_1', 'tms_2'}:
@@ -77,7 +77,7 @@ def plot_and_correlate(metrics, xvar, yvar, top_only=False, clean_outliers=False
         plt.ylabel(yvar)
         plt.show()
 
-    corr = metrics[xvar].corr(metrics[yvar]).item()
+    corr = metrics[xvar].corr(metrics[yvar], method=corr_method).item()
     # print(f"correlation: {corr:.5f}")
 
     return corr

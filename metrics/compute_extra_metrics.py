@@ -176,11 +176,15 @@ def populate_metrics_for_row(
                 torch.tensor(coords2).to(torch.float32),
             ).item()
         df.loc[i,'chamfer'] = np.round(dist_chamfer, 5)
+    else:
+        df.loc[i,'chamfer'] = np.nan
 
     # EMD
     if compute_emd:
         dist_emd = emd(coords1_tf, coords2)
         df.loc[i,'emd'] = np.round(dist_emd, 5)
+    else:
+        df.loc[i,'emd'] = np.nan
 
     return df # has been modified in place
 
@@ -200,7 +204,7 @@ def main(
             i,
             pdb_dir=pdb_dir,
             rot_mats_dir=rot_mats_dir,
-            # compute_emd=False, # EMD computation is super slow.
+            compute_emd=False, # EMD computation is super slow.
         )
 
     return df

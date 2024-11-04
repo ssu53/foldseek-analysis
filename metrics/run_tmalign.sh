@@ -36,10 +36,21 @@ mkdir $ROT_DIR
 
 # Get the pairfile
 
-# Testing -- run with existing tmaln-06_500.out instead of computing pair file
-# PAIR_FILE="${1:-$'/home/groups/jamesz/shiye/foldseek-analysis/training/data/tmaln-06_500.out'}"
+# Run with an existing pair file instead of sampling it from alignments
+# EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/training/data/tmaln-06_500.out'
+# EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_random_subset.out'
+# EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_train.out'
+# EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_val.out'
+EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_random_pairs_val.out'
 
-python get_sampled_pairfile.py $ALIGNMENTS_DIR $NUM_SAMPLES $MASTER_FILE $PAIR_FILE
+
+if [ -z ${EXISTING_PAIR_FILE+x} ]; then 
+    echo "Sampling pair file from " $ALIGNMENTS_DIR
+    python get_sampled_pairfile.py $ALIGNMENTS_DIR $NUM_SAMPLES $MASTER_FILE $PAIR_FILE
+else 
+    echo "Using existing pair file " $EXISTING_PAIR_FILE
+    cp $EXISTING_PAIR_FILE $PAIR_FILE
+fi
 
 
 

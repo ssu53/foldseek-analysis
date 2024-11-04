@@ -31,7 +31,9 @@ The pairs are sampled uniformly from the files contained in `ALIGNMENT_DIR`, whi
 
 This script creates a datestamped directory within `metrics/` to hold outputs.
 
-The slowest step by far is computing the EMD. 
+(The slowest step by far is computing the EMD. So skipping it, running with `compute_emd = False`.)
+
+(Can run directly from pairfile instead of sampling from `ALIGNMENT_DIR`. This is currently how the script runs but need to support this more user-friendly.)
 
 High level overview of the step sbelow.
 
