@@ -19,6 +19,7 @@ mkdir -p $OUTPUT_DIR
 
 PDB_DIR='/scratch/groups/jamesz/shiye/scope40/'
 MODE='foldseek'
+# MODE='data_dev/encodings_v6.pt'
 
 # Fetch PDBs
 if [ ! -d $PDB_DIR ]; then
