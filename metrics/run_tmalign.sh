@@ -41,7 +41,8 @@ mkdir $ROT_DIR
 # EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_random_subset.out'
 # EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_train.out'
 # EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_val.out'
-EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_random_pairs_val.out'
+EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_random_pairs_train.out'
+# EXISTING_PAIR_FILE='/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_random_pairs_val.out'
 
 
 if [ -z ${EXISTING_PAIR_FILE+x} ]; then 
