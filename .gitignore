@@ -21,4 +21,4 @@ metrics/TMalign_cpp
 # Script outputs
 metrics/outputs_*
 metrics/*.csv
-metrics/*.out
+metrics/pairfile/

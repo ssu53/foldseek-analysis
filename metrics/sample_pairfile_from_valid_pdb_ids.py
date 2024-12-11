@@ -203,6 +203,51 @@ def main2():
 
 
 
+def main3():
+
+    split = 'val'
+
+    valid_pdb_ids = pd.read_csv(
+        f'/home/groups/jamesz/shiye/foldseek-analysis/training/data_dev/valid_pdb_ids_{split}.csv',
+        header=None,
+    )[0].tolist()
+    print(len(valid_pdb_ids))
+
+    scop_lookup = get_scop_lookup()
+
+    pairs_within_fold = get_within_group_pairs(scop_lookup, valid_pdb_ids, level='fold', k=None)
+    pairs_within_fold_sampled = random.sample(pairs_within_fold, 2000)
+
+    print(f"{len(pairs_within_fold)=}")
+    print(f"{len(pairs_within_fold_sampled)=}")
+
+    pd.DataFrame(pairs_within_fold_sampled).to_csv(
+        f'/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_within_fold_{split}_2k.out',
+        sep=' ', header=None, index=None)
+
+
+
+def main4():
+
+    split = 'val'
+
+    valid_pdb_ids = pd.read_csv(
+        f'/home/groups/jamesz/shiye/foldseek-analysis/training/data_dev/valid_pdb_ids_{split}.csv',
+        header=None,
+    )[0].tolist()
+    print(len(valid_pdb_ids))
+
+    scop_lookup = get_scop_lookup()
+
+    pairs = list(itertools.combinations(valid_pdb_ids, 2))
+    pairs_sampled = random.sample(pairs, 2000)
+
+    pd.DataFrame(pairs_sampled).to_csv(
+        f'/home/groups/jamesz/shiye/foldseek-analysis/metrics/pairfile_random_pairs_{split}_2k.out',
+        sep=' ', header=None, index=None)
+
+
+
 if __name__ == '__main__':
-    main2()
+    main4()
 
